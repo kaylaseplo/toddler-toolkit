@@ -13,12 +13,26 @@ export default function WorldExplorer() {
   function handleImageUpload(e) {
     const file = e.target.files[0]
     if (!file) return
+
     setMediaType(file.type)
     setPreview(URL.createObjectURL(file))
+    setResult(null)
+    setError(null)
+
     const reader = new FileReader()
-    reader.onload = () => {
+    reader.onload = async () => {
       const base64 = reader.result.split(',')[1]
       setImageBase64(base64)
+      setLoading(true)
+      try {
+        const data = await exploreImage({ imageBase64: base64, mediaType: file.type, ageRange })
+        setResult(data)
+      } catch (err) {
+        setError('Something went wrong. Try again.')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
     }
     reader.readAsDataURL(file)
   }
@@ -58,8 +72,22 @@ export default function WorldExplorer() {
           <option value="4-5">4 – 5 years</option>
         </select>
 
-        <label>Upload a photo</label>
-        <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} />
+        <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: 'none' }} id="photoInput" />
+        <label htmlFor="photoInput" style={{
+        display: 'block',
+        width: '100%',
+        backgroundColor: 'var(--accent)',
+        color: 'white',
+        padding: '0.75rem',
+        borderRadius: 'var(--radius)',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        marginTop: '0.5rem',
+        marginBottom: '1rem',
+        textAlign: 'center'
+        }}>
+        📸 Snap a photo
+        </label>
 
         {preview && (
           <img
@@ -74,21 +102,8 @@ export default function WorldExplorer() {
           />
         )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={!imageBase64 || loading}
-          style={{
-            width: '100%',
-            backgroundColor: 'var(--accent)',
-            color: 'white',
-            padding: '0.75rem',
-            fontSize: '1rem',
-            marginTop: '1rem',
-            opacity: !imageBase64 ? 0.5 : 1
-          }}
-        >
-          {loading ? 'Exploring...' : 'What is this? 🔍'}
-        </button>
+        {loading && <p style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--text-secondary)' }}>✨ Exploring...</p>}
+        {error && <p style={{ color: '#c0392b', marginTop: '1rem' }}>{error}</p>}
 
         {error && <p style={{ color: '#c0392b', marginTop: '1rem' }}>{error}</p>}
       </div>
