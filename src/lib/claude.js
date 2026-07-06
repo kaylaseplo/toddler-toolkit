@@ -36,3 +36,40 @@ Respond ONLY with a JSON array, no markdown, no explanation. Format:
   const text = message.content[0].text
   return JSON.parse(text)
 }
+
+export async function exploreImage({ imageBase64, mediaType, ageRange }) {
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mediaType,
+              data: imageBase64
+            }
+          },
+          {
+            type: 'text',
+            text: `You are a helpful assistant for parents of toddlers. A parent has taken a photo of something their child is curious about. The child is ${ageRange} years old.
+
+Please respond ONLY with a JSON object, no markdown, no explanation. Format:
+{
+  "what": "Simple one-sentence identification of what this is",
+  "explanation": "A fun, age-appropriate explanation for a ${ageRange} year old",
+  "story": "A short 3-4 sentence story about this thing that would delight a toddler",
+  "questions": ["follow-up question 1", "follow-up question 2", "follow-up question 3"]
+}`
+          }
+        ]
+      }
+    ]
+  })
+
+  const text = message.content[0].text
+  return JSON.parse(text)
+}
