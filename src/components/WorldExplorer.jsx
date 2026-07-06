@@ -59,7 +59,7 @@ export default function WorldExplorer() {
         </select>
 
         <label>Upload a photo</label>
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} />
 
         {preview && (
           <img
